@@ -26,6 +26,22 @@ This library supports Go 1.18 or later.
 ### Actual test results for each Go version:
 
 ```
+% gvm-fav
+Now using version go1.18.10
+go version go1.18.10 darwin/amd64
+ok  	github.com/sttk-go/clidax/libarg	0.131s	coverage: 100.0% of statements
+
+Now using version go1.19.5
+go version go1.19.5 darwin/amd64
+ok  	github.com/sttk-go/clidax/libarg	0.135s	coverage: 100.0% of statements
+
+Now using version go1.20
+go version go1.20 darwin/amd64
+ok  	github.com/sttk-go/clidax/libarg	0.137s	coverage: 100.0% of statements
+
+Back to go1.20
+Now using version go1.20
+%
 ```
 
 
