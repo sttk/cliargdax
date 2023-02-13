@@ -41,14 +41,14 @@ type Args struct {
 
 // HasOpt is a method which checks if the option is specified in command line
 // arguments.
-func (args Args) HasOpt(opt string) bool {
-	return args.optParams[opt] != nil
+func (a Args) HasOpt(opt string) bool {
+	return a.optParams[opt] != nil
 }
 
 // OptParam is a method to get a option parameter which is firstly specified
 // with opt in command line arguments.
-func (args Args) OptParam(opt string) string {
-	arr := args.optParams[opt]
+func (a Args) OptParam(opt string) string {
+	arr := a.optParams[opt]
 	if len(arr) > 0 {
 		return arr[0]
 	} else {
@@ -58,8 +58,8 @@ func (args Args) OptParam(opt string) string {
 
 // OptParams is a method to get option parameters which are all specified with
 // opt in command line arguments.
-func (args Args) OptParams(opt string) []string {
-	arr := args.optParams[opt]
+func (a Args) OptParams(opt string) []string {
+	arr := a.optParams[opt]
 	if len(arr) > 0 {
 		return arr
 	} else {
@@ -69,8 +69,8 @@ func (args Args) OptParams(opt string) []string {
 
 // CmdParams is a method to get command parameters which are specified in
 // command line parameters and are not associated with any options.
-func (args Args) CmdParams() []string {
-	return args.cmdParams
+func (a Args) CmdParams() []string {
+	return a.cmdParams
 }
 
 // Parse is a function to parse command line arguments without configurations.
@@ -95,32 +95,47 @@ func (args Args) CmdParams() []string {
 // option parameter.
 // (For example, -abc=3 is equal to -a -b -c=3.)
 //
-//	os.Args[1:]               // [--foo-bar=A -a --baz -bc=3 qux]
-//	args, _ := Parse()
-//	args.HasOpt("a")          // true
-//	args.HasOpt("b")          // true
-//	args.HasOpt("c")          // true
-//	args.HasOpt("foo-bar")    // true
-//	args.HasOpt("baz")        // true
-//	args.OptParam("foo-bar")  // A
-//	args.OptParams("foo-bar") // [A]
-//	args.OptParam("c")        // 3
-//	args.OptParams("c")       // [3]
-//	args.CmdParams()          // [qux]
+// Usage example:
+//
+//	// os.Args[1:]  ==>  [--foo-bar=A -a --baz -bc=3 qux]
+//	a, _ := Parse()
+//	a.HasOpt("a")          // true
+//	a.HasOpt("b")          // true
+//	a.HasOpt("c")          // true
+//	a.HasOpt("foo-bar")    // true
+//	a.HasOpt("baz")        // true
+//	a.OptParam("foo-bar")  // A
+//	a.OptParams("foo-bar") // [A]
+//	a.OptParam("c")        // 3
+//	a.OptParams("c")       // [3]
+//	a.CmdParams()          // [qux]
 func Parse() (Args, sabi.Err) {
-	var args Args
+	return parseArgs(os.Args[1:], _false)
+}
+
+func _false(_ string) bool {
+	return false
+}
+
+func parseArgs(args []string, takeParams func(string) bool) (Args, sabi.Err) {
+	var a Args
 
 	var cmdParams = make([]string, 0)
 	var optParams = make(map[string][]string)
 
 	isNonOpt := false
+	prevOptTakingParams := ""
 
-	for _, arg := range os.Args[1:] {
+	for _, arg := range args {
 		if isNonOpt {
 			cmdParams = append(cmdParams, arg)
 
 		} else if arg == "--" {
 			isNonOpt = true
+
+		} else if len(prevOptTakingParams) > 0 {
+			addKeyValueToMap(optParams, prevOptTakingParams, arg)
+			prevOptTakingParams = ""
 
 		} else if strings.HasPrefix(arg, "--") {
 			arg = arg[2:]
@@ -131,34 +146,42 @@ func Parse() (Args, sabi.Err) {
 						break
 					}
 					if !unicode.Is(rangeOfAlNumMarks, r) {
-						return args, sabi.NewErr(InvalidOption{Option: arg})
+						return a, sabi.NewErr(InvalidOption{Option: arg})
 					}
 				} else {
 					if !unicode.Is(rangeOfAlphabets, r) {
-						return args, sabi.NewErr(InvalidOption{Option: arg})
+						return a, sabi.NewErr(InvalidOption{Option: arg})
 					}
 				}
 				i++
 			}
 			if i == len(arg) {
 				addKeyToMap(optParams, arg)
+				if takeParams(arg) {
+					prevOptTakingParams = arg
+				}
 			} else {
 				addKeyValueToMap(optParams, arg[0:i], arg[i+1:])
 			}
 
 		} else if strings.HasPrefix(arg, "-") {
 			arg := arg[1:]
-			var last string
-			for i, r := range arg {
+			var opt string
+			i := 0
+			for _, r := range arg {
 				if i > 0 && r == '=' {
-					addKeyValueToMap(optParams, last, arg[i+1:])
+					addKeyValueToMap(optParams, opt, arg[i+1:])
 					break
 				}
-				last = string(r)
+				opt = string(r)
 				if !unicode.Is(rangeOfAlphabets, r) {
-					return args, sabi.NewErr(InvalidOption{Option: last})
+					return a, sabi.NewErr(InvalidOption{Option: opt})
 				}
-				addKeyToMap(optParams, last)
+				addKeyToMap(optParams, opt)
+				i++
+			}
+			if i == len(arg) && takeParams(opt) {
+				prevOptTakingParams = opt
 			}
 
 		} else {
@@ -166,10 +189,10 @@ func Parse() (Args, sabi.Err) {
 		}
 	}
 
-	args.cmdParams = cmdParams
-	args.optParams = optParams
+	a.cmdParams = cmdParams
+	a.optParams = optParams
 
-	return args, sabi.Ok()
+	return a, sabi.Ok()
 }
 
 func addKeyToMap(m map[string][]string, key string) {
