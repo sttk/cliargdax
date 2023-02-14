@@ -110,31 +110,58 @@ func (a Args) CmdParams() []string {
 //	a.OptParams("c")       // [3]
 //	a.CmdParams()          // [qux]
 func Parse() (Args, sabi.Err) {
-	return parseArgs(os.Args[1:], _false)
+	var cmdParams = make([]string, 0)
+	var optParams = make(map[string][]string)
+
+	var collCmdParams = func(params ...string) sabi.Err {
+		cmdParams = append(cmdParams, params...)
+		return sabi.Ok()
+	}
+	var collOptParams = func(opt string, params ...string) sabi.Err {
+		arr := optParams[opt]
+		if arr == nil {
+			arr = empty
+		}
+		optParams[opt] = append(arr, params...)
+		return sabi.Ok()
+	}
+
+	err := parseArgs(os.Args[1:], collCmdParams, collOptParams, _false)
+	if !err.IsOk() {
+		return Args{}, err
+	}
+
+	return Args{cmdParams: cmdParams, optParams: optParams}, err
 }
 
 func _false(_ string) bool {
 	return false
 }
 
-func parseArgs(args []string, takeParams func(string) bool) (Args, sabi.Err) {
-	var a Args
-
-	var cmdParams = make([]string, 0)
-	var optParams = make(map[string][]string)
+func parseArgs(
+	args []string,
+	collectCmdParams func(...string) sabi.Err,
+	collectOptParams func(string, ...string) sabi.Err,
+	takeParams func(string) bool,
+) sabi.Err {
 
 	isNonOpt := false
 	prevOptTakingParams := ""
 
 	for _, arg := range args {
 		if isNonOpt {
-			cmdParams = append(cmdParams, arg)
-
+			err := collectCmdParams(arg)
+			if !err.IsOk() {
+				return err
+			}
 		} else if arg == "--" {
 			isNonOpt = true
 
 		} else if len(prevOptTakingParams) > 0 {
-			addKeyValueToMap(optParams, prevOptTakingParams, arg)
+			err := collectOptParams(prevOptTakingParams, arg)
+			if !err.IsOk() {
+				return err
+			}
 			prevOptTakingParams = ""
 
 		} else if strings.HasPrefix(arg, "--") {
@@ -146,38 +173,49 @@ func parseArgs(args []string, takeParams func(string) bool) (Args, sabi.Err) {
 						break
 					}
 					if !unicode.Is(rangeOfAlNumMarks, r) {
-						return a, sabi.NewErr(InvalidOption{Option: arg})
+						return sabi.NewErr(InvalidOption{Option: arg})
 					}
 				} else {
 					if !unicode.Is(rangeOfAlphabets, r) {
-						return a, sabi.NewErr(InvalidOption{Option: arg})
+						return sabi.NewErr(InvalidOption{Option: arg})
 					}
 				}
 				i++
 			}
 			if i == len(arg) {
-				addKeyToMap(optParams, arg)
+				err := collectOptParams(arg)
+				if !err.IsOk() {
+					return err
+				}
 				if takeParams(arg) {
 					prevOptTakingParams = arg
 				}
 			} else {
-				addKeyValueToMap(optParams, arg[0:i], arg[i+1:])
+				err := collectOptParams(arg[0:i], arg[i+1:])
+				if !err.IsOk() {
+					return err
+				}
 			}
-
 		} else if strings.HasPrefix(arg, "-") {
 			arg := arg[1:]
 			var opt string
 			i := 0
 			for _, r := range arg {
 				if i > 0 && r == '=' {
-					addKeyValueToMap(optParams, opt, arg[i+1:])
+					err := collectOptParams(opt, arg[i+1:])
+					if !err.IsOk() {
+						return err
+					}
 					break
 				}
 				opt = string(r)
 				if !unicode.Is(rangeOfAlphabets, r) {
-					return a, sabi.NewErr(InvalidOption{Option: opt})
+					return sabi.NewErr(InvalidOption{Option: opt})
 				}
-				addKeyToMap(optParams, opt)
+				err := collectOptParams(opt)
+				if !err.IsOk() {
+					return err
+				}
 				i++
 			}
 			if i == len(arg) && takeParams(opt) {
@@ -185,28 +223,12 @@ func parseArgs(args []string, takeParams func(string) bool) (Args, sabi.Err) {
 			}
 
 		} else {
-			cmdParams = append(cmdParams, arg)
+			err := collectCmdParams(arg)
+			if !err.IsOk() {
+				return err
+			}
 		}
 	}
 
-	a.cmdParams = cmdParams
-	a.optParams = optParams
-
-	return a, sabi.Ok()
-}
-
-func addKeyToMap(m map[string][]string, key string) {
-	arr := m[key]
-	if arr == nil {
-		m[key] = empty
-	}
-}
-
-func addKeyValueToMap(m map[string][]string, key, val string) {
-	arr := m[key]
-	if arr == nil {
-		m[key] = []string{val}
-	} else {
-		m[key] = append(arr, val)
-	}
+	return sabi.Ok()
 }
