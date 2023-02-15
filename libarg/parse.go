@@ -8,9 +8,9 @@ import (
 )
 
 type /* error reason */ (
-	// InvalidOption is an error reason which indicates that an invalid option is
-	// found in command line arguments.
-	InvalidOption struct{ Option string }
+	// OptionHasInvalidChar is an error reason which indicates that an invalid
+  // character is found in the option.
+	OptionHasInvalidChar struct{ Option string }
 )
 
 var (
@@ -173,11 +173,11 @@ func parseArgs(
 						break
 					}
 					if !unicode.Is(rangeOfAlNumMarks, r) {
-						return sabi.NewErr(InvalidOption{Option: arg})
+						return sabi.NewErr(OptionHasInvalidChar{Option: arg})
 					}
 				} else {
 					if !unicode.Is(rangeOfAlphabets, r) {
-						return sabi.NewErr(InvalidOption{Option: arg})
+						return sabi.NewErr(OptionHasInvalidChar{Option: arg})
 					}
 				}
 				i++
@@ -210,7 +210,7 @@ func parseArgs(
 				}
 				opt = string(r)
 				if !unicode.Is(rangeOfAlphabets, r) {
-					return sabi.NewErr(InvalidOption{Option: opt})
+					return sabi.NewErr(OptionHasInvalidChar{Option: opt})
 				}
 				err := collectOptParams(opt)
 				if !err.IsOk() {
