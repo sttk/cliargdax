@@ -14,6 +14,7 @@ type /* error reason */ (
 )
 
 var (
+	//noentry []string = nil
 	empty            = make([]string, 0)
 	rangeOfAlphabets = &unicode.RangeTable{
 		R16: []unicode.Range16{
@@ -42,29 +43,28 @@ type Args struct {
 // HasOpt is a method which checks if the option is specified in command line
 // arguments.
 func (a Args) HasOpt(opt string) bool {
-	return a.optParams[opt] != nil
+	_, exists := a.optParams[opt]
+	return exists
 }
 
 // OptParam is a method to get a option parameter which is firstly specified
 // with opt in command line arguments.
 func (a Args) OptParam(opt string) string {
 	arr := a.optParams[opt]
-	if len(arr) > 0 {
-		return arr[0]
-	} else {
+	// If no entry, map returns a nil slice.
+	// If a value of a found entry is an empty slice.
+	// Both returned values are zero length in common.
+	if len(arr) == 0 {
 		return ""
+	} else {
+		return arr[0]
 	}
 }
 
 // OptParams is a method to get option parameters which are all specified with
 // opt in command line arguments.
 func (a Args) OptParams(opt string) []string {
-	arr := a.optParams[opt]
-	if len(arr) > 0 {
-		return arr
-	} else {
-		return empty
-	}
+	return a.optParams[opt]
 }
 
 // CmdParams is a method to get command parameters which are specified in
@@ -118,8 +118,8 @@ func Parse() (Args, sabi.Err) {
 		return sabi.Ok()
 	}
 	var collOptParams = func(opt string, params ...string) sabi.Err {
-		arr := optParams[opt]
-		if arr == nil {
+		arr, exists := optParams[opt]
+		if !exists {
 			arr = empty
 		}
 		optParams[opt] = append(arr, params...)
