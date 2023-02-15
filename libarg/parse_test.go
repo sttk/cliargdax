@@ -9,12 +9,12 @@ import (
 
 var osArgs []string = os.Args
 
-func resetArgs() {
+func resetOsArgs() {
 	os.Args = osArgs
 }
 
 func TestParse_zeroArg(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 1)
 	os.Args[0] = osArgs[0]
@@ -30,7 +30,7 @@ func TestParse_zeroArg(t *testing.T) {
 }
 
 func TestParse_oneNonOptArg(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -47,7 +47,7 @@ func TestParse_oneNonOptArg(t *testing.T) {
 }
 
 func TestParse_oneLongOpt(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -66,7 +66,7 @@ func TestParse_oneLongOpt(t *testing.T) {
 }
 
 func TestParse_oneLongOptWithParam(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -85,7 +85,7 @@ func TestParse_oneLongOptWithParam(t *testing.T) {
 }
 
 func TestParse_oneShortOpt(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -104,7 +104,7 @@ func TestParse_oneShortOpt(t *testing.T) {
 }
 
 func TestParse_oneShortOptWithParam(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -123,7 +123,7 @@ func TestParse_oneShortOptWithParam(t *testing.T) {
 }
 
 func TestParse_oneArgByMultipleShortOpts(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -144,7 +144,7 @@ func TestParse_oneArgByMultipleShortOpts(t *testing.T) {
 }
 
 func TestParse_oneArgByMultipleShortOptsWithParam(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -165,7 +165,7 @@ func TestParse_oneArgByMultipleShortOptsWithParam(t *testing.T) {
 }
 
 func TestParse_longOptNameIncludesHyphenMark(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -181,7 +181,7 @@ func TestParse_longOptNameIncludesHyphenMark(t *testing.T) {
 }
 
 func TestParse_optParamsIncludesEqualMark(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -202,7 +202,7 @@ func TestParse_optParamsIncludesEqualMark(t *testing.T) {
 }
 
 func TestParse_optParamsIncludesMarks(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -223,7 +223,7 @@ func TestParse_optParamsIncludesMarks(t *testing.T) {
 }
 
 func TestParse_illegalLongOptIfIncludingInvalidChar(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 4)
 	os.Args[0] = osArgs[0]
@@ -235,7 +235,7 @@ func TestParse_illegalLongOptIfIncludingInvalidChar(t *testing.T) {
 
 	assert.False(t, err.IsOk())
 	switch err.Reason().(type) {
-	case libarg.InvalidOption:
+	case libarg.OptionHasInvalidChar:
 		assert.Equal(t, err.Get("Option"), "abc%def")
 	default:
 		assert.Fail(t, err.Error())
@@ -248,7 +248,7 @@ func TestParse_illegalLongOptIfIncludingInvalidChar(t *testing.T) {
 }
 
 func TestParse_illegalLongOptIfFirstCharIsNumber(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -258,7 +258,7 @@ func TestParse_illegalLongOptIfFirstCharIsNumber(t *testing.T) {
 
 	assert.False(t, err.IsOk())
 	switch err.Reason().(type) {
-	case libarg.InvalidOption:
+	case libarg.OptionHasInvalidChar:
 		assert.Equal(t, err.Get("Option"), "1abc")
 	default:
 		assert.Fail(t, err.Error())
@@ -271,7 +271,7 @@ func TestParse_illegalLongOptIfFirstCharIsNumber(t *testing.T) {
 }
 
 func TestParse_illegalLongOptIfFirstCharIsHyphen(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 2)
 	os.Args[0] = osArgs[0]
@@ -280,7 +280,7 @@ func TestParse_illegalLongOptIfFirstCharIsHyphen(t *testing.T) {
 	args, err := libarg.Parse()
 
 	switch err.Reason().(type) {
-	case libarg.InvalidOption:
+	case libarg.OptionHasInvalidChar:
 		assert.Equal(t, err.Get("Option"), "-aaa=123")
 	default:
 		assert.Fail(t, err.Error())
@@ -293,7 +293,7 @@ func TestParse_illegalLongOptIfFirstCharIsHyphen(t *testing.T) {
 }
 
 func TestParse_IllegalCharInShortOpt(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 4)
 	os.Args[0] = osArgs[0]
@@ -305,7 +305,7 @@ func TestParse_IllegalCharInShortOpt(t *testing.T) {
 
 	assert.False(t, err.IsOk())
 	switch err.Reason().(type) {
-	case libarg.InvalidOption:
+	case libarg.OptionHasInvalidChar:
 		assert.Equal(t, err.Get("Option"), "@")
 	default:
 		assert.Fail(t, err.Error())
@@ -318,7 +318,7 @@ func TestParse_IllegalCharInShortOpt(t *testing.T) {
 }
 
 func TestParse_useEndOptMark(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 7)
 	os.Args[0] = osArgs[0]
@@ -342,7 +342,7 @@ func TestParse_useEndOptMark(t *testing.T) {
 }
 
 func TestParse_multipleArgs(t *testing.T) {
-	defer resetArgs()
+	defer resetOsArgs()
 
 	os.Args = make([]string, 11)
 	os.Args[0] = osArgs[0]

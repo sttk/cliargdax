@@ -8,12 +8,13 @@ import (
 )
 
 type /* error reason */ (
-	// InvalidOption is an error reason which indicates that an invalid option is
-	// found in command line arguments.
-	InvalidOption struct{ Option string }
+	// OptionHasInvalidChar is an error reason which indicates that an invalid
+	// character is found in the option.
+	OptionHasInvalidChar struct{ Option string }
 )
 
 var (
+	//noentry []string = nil
 	empty            = make([]string, 0)
 	rangeOfAlphabets = &unicode.RangeTable{
 		R16: []unicode.Range16{
@@ -41,36 +42,35 @@ type Args struct {
 
 // HasOpt is a method which checks if the option is specified in command line
 // arguments.
-func (a Args) HasOpt(opt string) bool {
-	return a.optParams[opt] != nil
+func (args Args) HasOpt(opt string) bool {
+	_, exists := args.optParams[opt]
+	return exists
 }
 
 // OptParam is a method to get a option parameter which is firstly specified
 // with opt in command line arguments.
-func (a Args) OptParam(opt string) string {
-	arr := a.optParams[opt]
-	if len(arr) > 0 {
-		return arr[0]
-	} else {
+func (args Args) OptParam(opt string) string {
+	arr := args.optParams[opt]
+	// If no entry, map returns a nil slice.
+	// If a value of a found entry is an empty slice.
+	// Both returned values are zero length in common.
+	if len(arr) == 0 {
 		return ""
+	} else {
+		return arr[0]
 	}
 }
 
 // OptParams is a method to get option parameters which are all specified with
 // opt in command line arguments.
-func (a Args) OptParams(opt string) []string {
-	arr := a.optParams[opt]
-	if len(arr) > 0 {
-		return arr
-	} else {
-		return empty
-	}
+func (args Args) OptParams(opt string) []string {
+	return args.optParams[opt]
 }
 
 // CmdParams is a method to get command parameters which are specified in
 // command line parameters and are not associated with any options.
-func (a Args) CmdParams() []string {
-	return a.cmdParams
+func (args Args) CmdParams() []string {
+	return args.cmdParams
 }
 
 // Parse is a function to parse command line arguments without configurations.
@@ -98,17 +98,17 @@ func (a Args) CmdParams() []string {
 // Usage example:
 //
 //	// os.Args[1:]  ==>  [--foo-bar=A -a --baz -bc=3 qux]
-//	a, _ := Parse()
-//	a.HasOpt("a")          // true
-//	a.HasOpt("b")          // true
-//	a.HasOpt("c")          // true
-//	a.HasOpt("foo-bar")    // true
-//	a.HasOpt("baz")        // true
-//	a.OptParam("foo-bar")  // A
-//	a.OptParams("foo-bar") // [A]
-//	a.OptParam("c")        // 3
-//	a.OptParams("c")       // [3]
-//	a.CmdParams()          // [qux]
+//	args, _ := Parse()
+//	args.HasOpt("a")          // true
+//	args.HasOpt("b")          // true
+//	args.HasOpt("c")          // true
+//	args.HasOpt("foo-bar")    // true
+//	args.HasOpt("baz")        // true
+//	args.OptParam("foo-bar")  // A
+//	args.OptParams("foo-bar") // [A]
+//	args.OptParam("c")        // 3
+//	args.OptParams("c")       // [3]
+//	args.CmdParams()          // [qux]
 func Parse() (Args, sabi.Err) {
 	var cmdParams = make([]string, 0)
 	var optParams = make(map[string][]string)
@@ -118,8 +118,8 @@ func Parse() (Args, sabi.Err) {
 		return sabi.Ok()
 	}
 	var collOptParams = func(opt string, params ...string) sabi.Err {
-		arr := optParams[opt]
-		if arr == nil {
+		arr, exists := optParams[opt]
+		if !exists {
 			arr = empty
 		}
 		optParams[opt] = append(arr, params...)
@@ -173,11 +173,11 @@ func parseArgs(
 						break
 					}
 					if !unicode.Is(rangeOfAlNumMarks, r) {
-						return sabi.NewErr(InvalidOption{Option: arg})
+						return sabi.NewErr(OptionHasInvalidChar{Option: arg})
 					}
 				} else {
 					if !unicode.Is(rangeOfAlphabets, r) {
-						return sabi.NewErr(InvalidOption{Option: arg})
+						return sabi.NewErr(OptionHasInvalidChar{Option: arg})
 					}
 				}
 				i++
@@ -210,7 +210,7 @@ func parseArgs(
 				}
 				opt = string(r)
 				if !unicode.Is(rangeOfAlphabets, r) {
-					return sabi.NewErr(InvalidOption{Option: opt})
+					return sabi.NewErr(OptionHasInvalidChar{Option: opt})
 				}
 				err := collectOptParams(opt)
 				if !err.IsOk() {
