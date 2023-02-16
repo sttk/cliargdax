@@ -154,8 +154,6 @@ func parseArgs(
 			if !err.IsOk() {
 				return err
 			}
-		} else if arg == "--" {
-			isNonOpt = true
 
 		} else if len(prevOptTakingParams) > 0 {
 			err := collectOptParams(prevOptTakingParams, arg)
@@ -165,6 +163,10 @@ func parseArgs(
 			prevOptTakingParams = ""
 
 		} else if strings.HasPrefix(arg, "--") {
+			if len(arg) == 2 {
+				isNonOpt = true
+				continue
+			}
 			arg = arg[2:]
 			i := 0
 			for _, r := range arg {
@@ -197,6 +199,13 @@ func parseArgs(
 				}
 			}
 		} else if strings.HasPrefix(arg, "-") {
+			if len(arg) == 1 {
+				err := collectCmdParams(arg)
+				if !err.IsOk() {
+					return err
+				}
+				continue
+			}
 			arg := arg[1:]
 			var opt string
 			i := 0

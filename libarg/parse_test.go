@@ -446,6 +446,31 @@ func TestParse_useEndOptMark(t *testing.T) {
 	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
+func TestParse_singleHyphen(t *testing.T) {
+	defer resetOsArgs()
+
+	os.Args = make([]string, 2)
+	os.Args[0] = osArgs[0]
+	os.Args[1] = "-"
+
+	args, err := libarg.Parse()
+
+	assert.True(t, err.IsOk())
+	assert.Equal(t, args.CmdParams(), []string{"-"})
+	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
+	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
+	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
+	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
+}
+
 func TestParse_multipleArgs(t *testing.T) {
 	defer resetOsArgs()
 
