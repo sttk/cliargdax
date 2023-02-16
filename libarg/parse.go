@@ -128,7 +128,7 @@ func Parse() (Args, sabi.Err) {
 
 	err := parseArgs(os.Args[1:], collCmdParams, collOptParams, _false)
 	if !err.IsOk() {
-		return Args{}, err
+		return Args{cmdParams: empty}, err
 	}
 
 	return Args{cmdParams: cmdParams, optParams: optParams}, err
