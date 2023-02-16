@@ -148,7 +148,7 @@ func parseArgs(
 	isNonOpt := false
 	prevOptTakingParams := ""
 
-	for _, arg := range args {
+	for iArg, arg := range args {
 		if isNonOpt {
 			err := collectCmdParams(arg)
 			if !err.IsOk() {
@@ -167,11 +167,16 @@ func parseArgs(
 				isNonOpt = true
 				continue
 			}
+
 			arg = arg[2:]
 			i := 0
 			for _, r := range arg {
 				if i > 0 {
 					if r == '=' {
+						err := collectOptParams(arg[0:i], arg[i+1:])
+						if !err.IsOk() {
+							return err
+						}
 						break
 					}
 					if !unicode.Is(rangeOfAlNumMarks, r) {
@@ -184,20 +189,18 @@ func parseArgs(
 				}
 				i++
 			}
+
 			if i == len(arg) {
+				if takeParams(arg) && iArg < len(args)-1 {
+					prevOptTakingParams = arg
+					continue
+				}
 				err := collectOptParams(arg)
 				if !err.IsOk() {
 					return err
 				}
-				if takeParams(arg) {
-					prevOptTakingParams = arg
-				}
-			} else {
-				err := collectOptParams(arg[0:i], arg[i+1:])
-				if !err.IsOk() {
-					return err
-				}
 			}
+
 		} else if strings.HasPrefix(arg, "-") {
 			if len(arg) == 1 {
 				err := collectCmdParams(arg)
@@ -206,29 +209,40 @@ func parseArgs(
 				}
 				continue
 			}
+
 			arg := arg[1:]
 			var opt string
 			i := 0
 			for _, r := range arg {
-				if i > 0 && r == '=' {
-					err := collectOptParams(opt, arg[i+1:])
+				if i > 0 {
+					if r == '=' {
+						err := collectOptParams(opt, arg[i+1:])
+						if !err.IsOk() {
+							return err
+						}
+						break
+					}
+					err := collectOptParams(opt)
 					if !err.IsOk() {
 						return err
 					}
-					break
 				}
 				opt = string(r)
 				if !unicode.Is(rangeOfAlphabets, r) {
 					return sabi.NewErr(OptionHasInvalidChar{Option: opt})
 				}
-				err := collectOptParams(opt)
-				if !err.IsOk() {
-					return err
-				}
 				i++
 			}
-			if i == len(arg) && takeParams(opt) {
-				prevOptTakingParams = opt
+
+			if i == len(arg) {
+				if takeParams(opt) && iArg < len(args)-1 {
+					prevOptTakingParams = opt
+				} else {
+					err := collectOptParams(opt)
+					if !err.IsOk() {
+						return err
+					}
+				}
 			}
 
 		} else {
