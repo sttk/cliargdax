@@ -22,11 +22,19 @@ func TestParse_zeroArg(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_oneNonOptArg(t *testing.T) {
@@ -41,9 +49,17 @@ func TestParse_oneNonOptArg(t *testing.T) {
 	assert.True(t, err.IsOk())
 	assert.Equal(t, args.CmdParams(), []string{"abcd"})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_oneLongOpt(t *testing.T) {
@@ -56,10 +72,16 @@ func TestParse_oneLongOpt(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.True(t, args.HasOpt("silent"))
 	assert.Equal(t, args.OptParam("silent"), "")
 	assert.Equal(t, args.OptParams("silent"), []string{})
@@ -75,13 +97,19 @@ func TestParse_oneLongOptWithParam(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.True(t, args.HasOpt("alphabet"))
 	assert.Equal(t, args.OptParam("alphabet"), "ABC")
 	assert.Equal(t, args.OptParams("alphabet"), []string{"ABC"})
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_oneShortOpt(t *testing.T) {
@@ -94,13 +122,19 @@ func TestParse_oneShortOpt(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.True(t, args.HasOpt("s"))
 	assert.Equal(t, args.OptParam("s"), "")
 	assert.Equal(t, args.OptParams("s"), []string{})
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_oneShortOptWithParam(t *testing.T) {
@@ -113,13 +147,19 @@ func TestParse_oneShortOptWithParam(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.True(t, args.HasOpt("a"))
 	assert.Equal(t, args.OptParam("a"), "123")
 	assert.Equal(t, args.OptParams("a"), []string{"123"})
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_oneArgByMultipleShortOpts(t *testing.T) {
@@ -141,6 +181,21 @@ func TestParse_oneArgByMultipleShortOpts(t *testing.T) {
 	assert.Equal(t, args.OptParam("s"), "")
 	assert.Equal(t, args.OptParams("s"), []string{})
 	assert.False(t, args.HasOpt("silent"))
+
+	assert.True(t, err.IsOk())
+	assert.Equal(t, args.CmdParams(), []string{})
+	assert.True(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string{})
+	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
+	assert.True(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string{})
+	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_oneArgByMultipleShortOptsWithParam(t *testing.T) {
@@ -153,15 +208,19 @@ func TestParse_oneArgByMultipleShortOptsWithParam(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.True(t, args.HasOpt("a"))
 	assert.Equal(t, args.OptParam("a"), "123")
 	assert.Equal(t, args.OptParams("a"), []string{"123"})
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.True(t, args.HasOpt("s"))
 	assert.Equal(t, args.OptParam("s"), "")
 	assert.Equal(t, args.OptParams("s"), []string{})
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_longOptNameIncludesHyphenMark(t *testing.T) {
@@ -190,15 +249,19 @@ func TestParse_optParamsIncludesEqualMark(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.True(t, args.HasOpt("a"))
 	assert.Equal(t, args.OptParam("a"), "b=c")
 	assert.Equal(t, args.OptParams("a"), []string{"b=c"})
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.True(t, args.HasOpt("s"))
 	assert.Equal(t, args.OptParam("s"), "")
 	assert.Equal(t, args.OptParams("s"), []string{})
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_optParamsIncludesMarks(t *testing.T) {
@@ -211,15 +274,19 @@ func TestParse_optParamsIncludesMarks(t *testing.T) {
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.True(t, args.HasOpt("a"))
 	assert.Equal(t, args.OptParam("a"), "1,2-3")
 	assert.Equal(t, args.OptParams("a"), []string{"1,2-3"})
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.True(t, args.HasOpt("s"))
 	assert.Equal(t, args.OptParam("s"), "")
 	assert.Equal(t, args.OptParams("s"), []string{})
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_illegalLongOptIfIncludingInvalidChar(t *testing.T) {
@@ -240,11 +307,19 @@ func TestParse_illegalLongOptIfIncludingInvalidChar(t *testing.T) {
 	default:
 		assert.Fail(t, err.Error())
 	}
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_illegalLongOptIfFirstCharIsNumber(t *testing.T) {
@@ -263,11 +338,19 @@ func TestParse_illegalLongOptIfFirstCharIsNumber(t *testing.T) {
 	default:
 		assert.Fail(t, err.Error())
 	}
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_illegalLongOptIfFirstCharIsHyphen(t *testing.T) {
@@ -285,11 +368,19 @@ func TestParse_illegalLongOptIfFirstCharIsHyphen(t *testing.T) {
 	default:
 		assert.Fail(t, err.Error())
 	}
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_IllegalCharInShortOpt(t *testing.T) {
@@ -310,11 +401,19 @@ func TestParse_IllegalCharInShortOpt(t *testing.T) {
 	default:
 		assert.Fail(t, err.Error())
 	}
-	assert.Equal(t, len(args.CmdParams()), 0)
+	assert.Equal(t, args.CmdParams(), []string{})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_useEndOptMark(t *testing.T) {
@@ -334,43 +433,74 @@ func TestParse_useEndOptMark(t *testing.T) {
 	assert.True(t, err.IsOk())
 	assert.Equal(t, args.CmdParams(), []string{"-s", "--", "-s@", "xxx"})
 	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
 	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
 	assert.True(t, args.HasOpt("s"))
 	assert.Equal(t, args.OptParam("s"), "")
 	assert.Equal(t, args.OptParams("s"), []string{})
 	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
+}
+
+func TestParse_singleHyphen(t *testing.T) {
+	defer resetOsArgs()
+
+	os.Args = make([]string, 2)
+	os.Args[0] = osArgs[0]
+	os.Args[1] = "-"
+
+	args, err := libarg.Parse()
+
+	assert.True(t, err.IsOk())
+	assert.Equal(t, args.CmdParams(), []string{"-"})
+	assert.False(t, args.HasOpt("a"))
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string(nil))
+	assert.False(t, args.HasOpt("alphabet"))
+	assert.Equal(t, args.OptParam("alphabet"), "")
+	assert.Equal(t, args.OptParams("alphabet"), []string(nil))
+	assert.False(t, args.HasOpt("s"))
+	assert.Equal(t, args.OptParam("s"), "")
+	assert.Equal(t, args.OptParams("s"), []string(nil))
+	assert.False(t, args.HasOpt("silent"))
+	assert.Equal(t, args.OptParam("silent"), "")
+	assert.Equal(t, args.OptParams("silent"), []string(nil))
 }
 
 func TestParse_multipleArgs(t *testing.T) {
 	defer resetOsArgs()
 
-	os.Args = make([]string, 11)
+	os.Args = make([]string, 8)
 	os.Args[0] = osArgs[0]
-	os.Args[1] = "--alphabet=ABC"
-	os.Args[2] = "-a=123"
-	os.Args[3] = "--a=456"
-	os.Args[4] = "xxxx"
-	os.Args[5] = "--silent"
-	os.Args[6] = "--alphabet"
-	os.Args[7] = "-sa=789"
-	os.Args[8] = "yyy"
-	os.Args[9] = "--alphabet=DEF"
-	os.Args[10] = "zz"
+	os.Args[1] = "--foo-bar"
+	os.Args[2] = "-a"
+	os.Args[3] = "--baz"
+	os.Args[4] = "-bc=3"
+	os.Args[5] = "qux"
+	os.Args[6] = "-c=4"
+	os.Args[7] = "quux"
 
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, args.CmdParams(), []string{"xxxx", "yyy", "zz"})
 	assert.True(t, args.HasOpt("a"))
-	assert.Equal(t, args.OptParam("a"), "123")
-	assert.Equal(t, args.OptParams("a"), []string{"123", "456", "789"})
-	assert.True(t, args.HasOpt("alphabet"))
-	assert.Equal(t, args.OptParam("alphabet"), "ABC")
-	assert.Equal(t, args.OptParams("alphabet"), []string{"ABC", "DEF"})
-	assert.True(t, args.HasOpt("s"))
-	assert.Equal(t, args.OptParam("s"), "")
-	assert.Equal(t, args.OptParams("s"), []string{})
-	assert.True(t, args.HasOpt("silent"))
-	assert.Equal(t, args.OptParam("silent"), "")
-	assert.Equal(t, args.OptParams("silent"), []string{})
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string{})
+	assert.True(t, args.HasOpt("b"))
+	assert.Equal(t, args.OptParam("b"), "")
+	assert.Equal(t, args.OptParams("b"), []string{})
+	assert.True(t, args.HasOpt("c"))
+	assert.Equal(t, args.OptParam("c"), "3")
+	assert.Equal(t, args.OptParams("c"), []string{"3", "4"})
+	assert.True(t, args.HasOpt("foo-bar"))
+	assert.Equal(t, args.OptParam("foo-bar"), "")
+	assert.Equal(t, args.OptParams("foo-bar"), []string{})
+	assert.True(t, args.HasOpt("baz"))
+	assert.Equal(t, args.OptParam("baz"), "")
+	assert.Equal(t, args.OptParams("baz"), []string{})
+	assert.Equal(t, args.CmdParams(), []string{"qux", "quux"})
 }
