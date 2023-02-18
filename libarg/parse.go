@@ -80,7 +80,7 @@ func (args Args) CmdParams() []string {
 // Parse is a function to parse command line arguments without configurations.
 // This function divides command line arguments to command parameters, which
 // are not associated with any options, and options, of which each has a name
-// and option parametes.
+// and option parameters.
 // If an option appears multiple times in command line arguments, the option
 // has multiple option parameters.
 // Options are divided to long format options and short format options.
@@ -101,18 +101,16 @@ func (args Args) CmdParams() []string {
 //
 // Usage example:
 //
-//	// os.Args[1:]  ==>  [--foo-bar=A -a --baz -bc=3 qux]
+//	// os.Args[1:]  ==>  [--foo-bar=A -a --baz -bc=3 qux -c=4 quux]
 //	args, _ := Parse()
 //	args.HasOpt("a")          // true
 //	args.HasOpt("b")          // true
 //	args.HasOpt("c")          // true
 //	args.HasOpt("foo-bar")    // true
 //	args.HasOpt("baz")        // true
-//	args.OptParam("foo-bar")  // A
-//	args.OptParams("foo-bar") // [A]
 //	args.OptParam("c")        // 3
-//	args.OptParams("c")       // [3]
-//	args.CmdParams()          // [qux]
+//	args.OptParams("c")       // [3 4]
+//	args.CmdParams()          // [qux quux]
 func Parse() (Args, sabi.Err) {
 	var cmdParams = make([]string, 0)
 	var optParams = make(map[string][]string)

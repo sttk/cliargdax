@@ -474,33 +474,33 @@ func TestParse_singleHyphen(t *testing.T) {
 func TestParse_multipleArgs(t *testing.T) {
 	defer resetOsArgs()
 
-	os.Args = make([]string, 11)
+	os.Args = make([]string, 8)
 	os.Args[0] = osArgs[0]
-	os.Args[1] = "--alphabet=ABC"
-	os.Args[2] = "-a=123"
-	os.Args[3] = "--a=456"
-	os.Args[4] = "xxxx"
-	os.Args[5] = "--silent"
-	os.Args[6] = "--alphabet"
-	os.Args[7] = "-sa=789"
-	os.Args[8] = "yyy"
-	os.Args[9] = "--alphabet=DEF"
-	os.Args[10] = "zz"
+	os.Args[1] = "--foo-bar"
+	os.Args[2] = "-a"
+	os.Args[3] = "--baz"
+	os.Args[4] = "-bc=3"
+	os.Args[5] = "qux"
+	os.Args[6] = "-c=4"
+	os.Args[7] = "quux"
 
 	args, err := libarg.Parse()
 
 	assert.True(t, err.IsOk())
-	assert.Equal(t, args.CmdParams(), []string{"xxxx", "yyy", "zz"})
 	assert.True(t, args.HasOpt("a"))
-	assert.Equal(t, args.OptParam("a"), "123")
-	assert.Equal(t, args.OptParams("a"), []string{"123", "456", "789"})
-	assert.True(t, args.HasOpt("alphabet"))
-	assert.Equal(t, args.OptParam("alphabet"), "ABC")
-	assert.Equal(t, args.OptParams("alphabet"), []string{"ABC", "DEF"})
-	assert.True(t, args.HasOpt("s"))
-	assert.Equal(t, args.OptParam("s"), "")
-	assert.Equal(t, args.OptParams("s"), []string{})
-	assert.True(t, args.HasOpt("silent"))
-	assert.Equal(t, args.OptParam("silent"), "")
-	assert.Equal(t, args.OptParams("silent"), []string{})
+	assert.Equal(t, args.OptParam("a"), "")
+	assert.Equal(t, args.OptParams("a"), []string{})
+	assert.True(t, args.HasOpt("b"))
+	assert.Equal(t, args.OptParam("b"), "")
+	assert.Equal(t, args.OptParams("b"), []string{})
+	assert.True(t, args.HasOpt("c"))
+	assert.Equal(t, args.OptParam("c"), "3")
+	assert.Equal(t, args.OptParams("c"), []string{"3", "4"})
+	assert.True(t, args.HasOpt("foo-bar"))
+	assert.Equal(t, args.OptParam("foo-bar"), "")
+	assert.Equal(t, args.OptParams("foo-bar"), []string{})
+	assert.True(t, args.HasOpt("baz"))
+	assert.Equal(t, args.OptParam("baz"), "")
+	assert.Equal(t, args.OptParams("baz"), []string{})
+	assert.Equal(t, args.CmdParams(), []string{"qux", "quux"})
 }

@@ -7,13 +7,43 @@ A dax of sabi to operate command line interface of Golang application.
 - [License](#license)
 
 <a name="usage"></a>
-## Usage
+## Usage examples
 
 ### Parse CLI arguments without configurations
 
+```
+// os.Args[1:]  ==>  [--foo-bar=A -a --baz -bc=3 qux]
+args, _ := Parse()
+args.HasOpt("a")          // true
+args.HasOpt("b")          // true
+args.HasOpt("c")          // true
+args.HasOpt("foo-bar")    // true
+args.HasOpt("baz")        // true
+args.OptParam("foo-bar")  // A
+args.OptParams("foo-bar") // [A]
+args.OptParam("c")        // 3
+args.OptParams("c")       // [3]
+args.CmdParams()          // [qux]
+```
 
 ### Parse CLI arguments with configurations
 
+```
+osArgs := []string{"--foo-bar", "quz", "--baz", "1", "-z=2", "-X", "quux"}
+optCfgs := []OptCfg{
+  OptCfg{Name:"foo-bar"},
+  OptCfg{Name:"baz", Aliases:[]string{"z"}, HasParam:true, IsArray:true},
+  OptCfg{Name:"*"},
+}
+
+args, err := ParseWith(osArgs, optCfgs)
+args.HasOpt("foo-bar")  // true
+args.HasOpt("baz")      // true
+args.HasOpt("X")        // true, due to "*" config
+args.OptParam("baz")    // 1
+args.OptParams("baz")   // [1 2]
+args.CmdParams()        // [qux quux]
+```
 
 ### Parse CLI arguments with struct tags
 
