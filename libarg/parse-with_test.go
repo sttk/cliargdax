@@ -753,6 +753,7 @@ func TestParseWith_multipleArgs(t *testing.T) {
 			HasParam: true,
 			IsArray:  true,
 		},
+		libarg.OptCfg{Name: "corge", Default: []string{"99"}},
 		libarg.OptCfg{Name: "*"},
 	}
 
@@ -761,7 +762,10 @@ func TestParseWith_multipleArgs(t *testing.T) {
 	assert.True(t, args.HasOpt("foo-bar"))
 	assert.True(t, args.HasOpt("baz"))
 	assert.True(t, args.HasOpt("X"))
+	assert.True(t, args.HasOpt("corge"))
 	assert.Equal(t, args.OptParam("baz"), "1")
 	assert.Equal(t, args.OptParams("baz"), []string{"1", "2"})
+	assert.Equal(t, args.OptParam("corge"), "99")
+	assert.Equal(t, args.OptParams("corge"), []string{"99"})
 	assert.Equal(t, args.CmdParams(), []string{"qux", "quux"})
 }

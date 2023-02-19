@@ -43,6 +43,7 @@ const anyOpt = "*"
 // Name is the option name and Aliases are the another names.
 // Options given by those names in command line arguments are all registered to
 // Args with the Name.
+//
 // HasParam and IsArray are flags which allows the option to take option
 // parameters.
 // If both HasParam and IsArray are true, the option can take one or multiple
@@ -51,11 +52,15 @@ const anyOpt = "*"
 // option parameter.
 // If both HasParam and IsArray are false, the option can take no option
 // parameter.
+//
+// Default is the field to specify the default value for when the option is not
+// given in command line arguments.
 type OptCfg struct {
 	Name     string
 	Aliases  []string
 	HasParam bool
 	IsArray  bool
+	Default  []string
 }
 
 // ParseWith is a function which parses command line arguments with option
@@ -67,13 +72,16 @@ type OptCfg struct {
 // see the comment of the function.
 //
 // This function allows only options declared in option configurations.
-// A option configuration has fields: Name, Aliases, HasParam, and IsArray.
+// A option configuration has fields: Name, Aliases, HasParam, IsArray, and
+// Default.
 // When an option matches Name or includes in Aliases in an option
 // configuration, the option is registered in Args with the Name.
 // If both HasParam and IsArray are true, the option can has one or multiple
 // option parameters, and if HasParam is true and IsArray is false, the option
 // can has only one option parameter, otherwise the option cannot have option
 // parameter.
+// If Default is specified and the option is not given in command line
+// arguments, the value of Default is set to the option parameter.
 //
 // If options not declared in option configurations are given in command line
 // arguments, this function basically returns UnconfiguredOption error.
@@ -84,21 +92,26 @@ type OptCfg struct {
 //
 //	osArgs := []string{"--foo-bar", "quz", "--baz", "1", "-z=2", "-X", "quux"}
 //	optCfgs := []OptCfg{
-//	  OptCfg{Name:"foo-bar"},
-//	  OptCfg{Name:"baz", Aliases:[]string{"z"}, HasParam:true, IsArray:true},
-//	  OptCfg{Name:"*"},
+//		OptCfg{Name:"foo-bar"},
+//		OptCfg{Name:"baz", Aliases:[]string{"z"}, HasParam:true, IsArray:true},
+//		OptCfg{Name:"corge", Default:[]string{"99"}},
+//		OptCfg{Name:"*"},
 //	}
 //
 //	args, err := ParseWith(osArgs, optCfgs)
 //	args.HasOpt("foo-bar")  // true
 //	args.HasOpt("baz")      // true
 //	args.HasOpt("X")        // true, due to "*" config
+//	args.HasOpt("corge")    // true, due to .Default.
 //	args.OptParam("baz")    // 1
 //	args.OptParams("baz")   // [1 2]
+//	args.OptParam("corge")  // 99
+//	args.OptParams("corge") // [99]
 //	args.CmdParams()        // [qux quux]
 func ParseWith(args []string, optCfgs []OptCfg) (Args, sabi.Err) {
 	hasAnyOpt := false
 	cfgMap := make(map[string]int)
+	defMap := make(map[string]int)
 	for i, cfg := range optCfgs {
 		if cfg.IsArray && !cfg.HasParam {
 			err := sabi.NewErr(ConfigIsArrayButHasNoParam{Opt: cfg.Name})
@@ -111,6 +124,9 @@ func ParseWith(args []string, optCfgs []OptCfg) (Args, sabi.Err) {
 		cfgMap[cfg.Name] = i
 		for _, a := range cfg.Aliases {
 			cfgMap[a] = i
+		}
+		if cfg.Default != nil {
+			defMap[cfg.Name] = i
 		}
 	}
 
@@ -174,6 +190,13 @@ func ParseWith(args []string, optCfgs []OptCfg) (Args, sabi.Err) {
 	err := parseArgs(args, collCmdParams, collOptParams, takeParam)
 	if !err.IsOk() {
 		return Args{cmdParams: empty}, err
+	}
+
+	for name, i := range defMap {
+		_, exists := optParams[name]
+		if !exists {
+			optParams[name] = optCfgs[i].Default
+		}
 	}
 
 	return Args{cmdParams: cmdParams, optParams: optParams}, err
