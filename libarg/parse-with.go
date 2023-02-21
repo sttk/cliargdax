@@ -14,6 +14,11 @@ type /* error reason */ (
 	// (.IsArray = true) but must have no option parameter (.HasParam = false).
 	ConfigIsArrayButHasNoParam struct{ Opt string }
 
+	// ConfigHasDefaultButHasNoParam is an error reason which indicates that
+	// an option configuration contradicts that the option has default value
+	// (.Default != nil) but must have no option parameter (.HasParam = false).
+	ConfigHasDefaultButHasNoParam struct{ Opt string }
+
 	// UnconfiguredOption is an error reason which indicates that there is no
 	// configuration about the input option.
 	UnconfiguredOption struct{ Opt string }
@@ -121,12 +126,16 @@ func ParseWith(args []string, optCfgs []OptCfg) (Args, sabi.Err) {
 			hasAnyOpt = true
 			continue
 		}
+		if cfg.Default != nil {
+			if !cfg.HasParam {
+				err := sabi.NewErr(ConfigHasDefaultButHasNoParam{Opt: cfg.Name})
+				return Args{cmdParams: empty}, err
+			}
+			defMap[cfg.Name] = i
+		}
 		cfgMap[cfg.Name] = i
 		for _, a := range cfg.Aliases {
 			cfgMap[a] = i
-		}
-		if cfg.Default != nil {
-			defMap[cfg.Name] = i
 		}
 	}
 

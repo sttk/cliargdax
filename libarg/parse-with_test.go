@@ -743,6 +743,50 @@ func TestParseWith_oneCfgIsNotArrayButOptsAreMultiple(t *testing.T) {
 	assert.Equal(t, args.CmdParams(), []string{})
 }
 
+func TestParseWith_specifyDefault(t *testing.T) {
+	osArgs := []string{}
+	optCfgs := []libarg.OptCfg{
+		libarg.OptCfg{Name: "bar", HasParam: true, Default: []string{"A"}},
+		libarg.OptCfg{Name: "baz", HasParam: true, IsArray: true, Default: []string{"A"}},
+	}
+
+	args, err := libarg.ParseWith(osArgs, optCfgs)
+	assert.True(t, err.IsOk())
+	assert.False(t, args.HasOpt("foo"))
+	assert.True(t, args.HasOpt("bar"))
+	assert.True(t, args.HasOpt("baz"))
+	assert.Equal(t, args.OptParam("foo"), "")
+	assert.Equal(t, args.OptParam("bar"), "A")
+	assert.Equal(t, args.OptParam("baz"), "A")
+	assert.Equal(t, args.OptParams("foo"), []string(nil))
+	assert.Equal(t, args.OptParams("bar"), []string{"A"})
+	assert.Equal(t, args.OptParams("baz"), []string{"A"})
+}
+
+func TestParseWith_oneCfgHasNoParamButHasDefault(t *testing.T) {
+	optCfgs := []libarg.OptCfg{
+		libarg.OptCfg{Name: "foo-bar", HasParam: false, Default: []string{"A"}},
+	}
+
+	osArgs := []string{}
+
+	args, err := libarg.ParseWith(osArgs, optCfgs)
+	assert.False(t, err.IsOk())
+	switch err.Reason().(type) {
+	case libarg.ConfigHasDefaultButHasNoParam:
+		assert.Equal(t, err.Get("Opt"), "foo-bar")
+	default:
+		assert.Fail(t, err.Error())
+	}
+	assert.False(t, args.HasOpt("foo-bar"))
+	assert.Equal(t, args.OptParam("foo-bar"), "")
+	assert.Equal(t, args.OptParams("foo-bar"), []string(nil))
+	assert.False(t, args.HasOpt("f"))
+	assert.Equal(t, args.OptParam("f"), "")
+	assert.Equal(t, args.OptParams("f"), []string(nil))
+	assert.Equal(t, args.CmdParams(), []string{})
+}
+
 func TestParseWith_multipleArgs(t *testing.T) {
 	osArgs := []string{"--foo-bar", "qux", "--baz", "1", "-z=2", "-X", "quux"}
 	optCfgs := []libarg.OptCfg{
@@ -753,11 +797,12 @@ func TestParseWith_multipleArgs(t *testing.T) {
 			HasParam: true,
 			IsArray:  true,
 		},
-		libarg.OptCfg{Name: "corge", Default: []string{"99"}},
+		libarg.OptCfg{Name: "corge", HasParam: true, Default: []string{"99"}},
 		libarg.OptCfg{Name: "*"},
 	}
 
 	args, err := libarg.ParseWith(osArgs, optCfgs)
+	t.Logf(err.Error())
 	assert.True(t, err.IsOk())
 	assert.True(t, args.HasOpt("foo-bar"))
 	assert.True(t, args.HasOpt("baz"))
