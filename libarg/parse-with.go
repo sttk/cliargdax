@@ -99,7 +99,7 @@ type OptCfg struct {
 //	optCfgs := []OptCfg{
 //		OptCfg{Name:"foo-bar"},
 //		OptCfg{Name:"baz", Aliases:[]string{"z"}, HasParam:true, IsArray:true},
-//		OptCfg{Name:"corge", Default:[]string{"99"}},
+//		OptCfg{Name:"corge", HasParam:true, Default:[]string{"99"}},
 //		OptCfg{Name:"*"},
 //	}
 //
