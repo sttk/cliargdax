@@ -802,7 +802,6 @@ func TestParseWith_multipleArgs(t *testing.T) {
 	}
 
 	args, err := libarg.ParseWith(osArgs, optCfgs)
-	t.Logf(err.Error())
 	assert.True(t, err.IsOk())
 	assert.True(t, args.HasOpt("foo-bar"))
 	assert.True(t, args.HasOpt("baz"))
