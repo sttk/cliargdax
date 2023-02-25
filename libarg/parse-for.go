@@ -129,10 +129,6 @@ func ParseFor(args []string, options any) ([]string, sabi.Err) {
 	n := t.NumField()
 
 	optCfgs := make([]OptCfg, n)
-	vsetMap := make(map[string]func([]string) sabi.Err)
-
-	var vset func([]string) sabi.Err
-	var name string
 	var err sabi.Err
 
 	for i := 0; i < n; i++ {
@@ -140,23 +136,17 @@ func ParseFor(args []string, options any) ([]string, sabi.Err) {
 		if !err.IsOk() {
 			return empty, err
 		}
-		vset, err = newValueSetter(optCfgs[i].Name, v.Field(i))
+		var setter func([]string) sabi.Err
+		setter, err = newValueSetter(optCfgs[i].Name, v.Field(i))
 		if !err.IsOk() {
 			return empty, err
 		}
-		vsetMap[optCfgs[i].Name] = vset
+		optCfgs[i].OnParsed = &setter
 	}
 
 	a, err := ParseWith(args, optCfgs)
 	if !err.IsOk() {
 		return empty, err
-	}
-
-	for name, vset = range vsetMap {
-		err := vset(a.optParams[name])
-		if !err.IsOk() {
-			return empty, err
-		}
 	}
 
 	return a.cmdParams, sabi.Ok()
