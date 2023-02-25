@@ -18,7 +18,6 @@ type /* error reason */ (
 )
 
 var (
-	//noentry []string = nil
 	empty            = make([]string, 0)
 	rangeOfAlphabets = &unicode.RangeTable{
 		R16: []unicode.Range16{
