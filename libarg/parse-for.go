@@ -101,7 +101,7 @@ type /* error reason */ (
 //	  FooBar bool     `opt:"foo-bar,f"`
 //	  Baz    int      `opt:"baz,b=99"`
 //	  Qux    string   `opt:"=XXX"`
-//	  Quux   []string `opt:"quux=/[A/B/C]"`
+//	  Quux   []string `opt:"quux=[A,B,C]"`
 //	  Corge  []int
 //	}
 //	options := MyOptions{}
