@@ -47,6 +47,29 @@ args.CmdParams()        // [qux quux]
 
 ### Parse CLI arguments with struct tags
 
+```
+type MyOptions struct {
+  FooBar bool     `opt:"foo-bar,f"`
+  Baz    int      `opt:"baz,b=99"`
+  Qux    string   `opt:"=XXX"`
+  Quux   []string `opt:"quux=/[A/B/C]"`
+  Corge  []int
+}
+options := MyOptions{}
+
+osArgs := []string{
+  "--foo-bar", "c1", "-b", "12", "--Qux", "ABC", "c2",
+  "--Corge", "20", "--Corge=21",
+}
+
+cmdParams, err := ParseFor(osArgs, &options)
+cmdParams      // [c1 c2]
+options.FooBar // true
+options.Baz    // 12
+options.Qux    // ABC
+options.Quux   // [A B C]
+options.Corge  // [20 21]
+```
 
 <a name="support-go-versions"></a>
 ## Supporting Go versions
@@ -59,15 +82,15 @@ This library supports Go 1.18 or later.
 % gvm-fav
 Now using version go1.18.10
 go version go1.18.10 darwin/amd64
-ok  	github.com/sttk-go/clidax/libarg	0.133s	coverage: 96.6% of statements
+ok  	github.com/sttk-go/clidax/libarg	0.131s	coverage: 97.0% of statements
 
 Now using version go1.19.5
 go version go1.19.5 darwin/amd64
-ok  	github.com/sttk-go/clidax/libarg	0.135s	coverage: 96.6% of statements
+ok  	github.com/sttk-go/clidax/libarg	0.133s	coverage: 97.0% of statements
 
 Now using version go1.20
 go version go1.20 darwin/amd64
-ok  	github.com/sttk-go/clidax/libarg	0.137s	coverage: 96.6% of statements
+ok  	github.com/sttk-go/clidax/libarg	0.137s	coverage: 97.0% of statements
 
 Back to go1.20
 Now using version go1.20
