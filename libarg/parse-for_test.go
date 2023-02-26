@@ -1324,3 +1324,76 @@ func TestParseFor_multipleOptsAndMultipleArgs(t *testing.T) {
 	assert.Equal(t, options.Quux, []string{"A", "B", "C"})
 	assert.Equal(t, options.Corge, []int{20, 21})
 }
+
+func TestMakeOptCfgsFor_multipleOptsAndMultipleArgs(t *testing.T) {
+	type MyOptions struct {
+		FooBar bool     `opt:"foo-bar,f"`
+		Baz    int      `opt:"baz,b=99"`
+		Qux    string   `opt:"=XXX"`
+		Quux   []string `opt:"quux=/[A/B/C]"`
+		Corge  []int
+	}
+	options := MyOptions{}
+
+	args := []string{
+		"--foo-bar", "c1", "-b", "12", "--Qux", "ABC", "c2",
+		"--Corge", "20", "--Corge=21",
+	}
+
+	optCfgs, err0 := libarg.MakeOptCfgsFor(&options)
+	assert.True(t, err0.IsOk())
+	assert.Equal(t, optCfgs[0].Name, "foo-bar")
+	assert.Equal(t, optCfgs[0].Aliases, []string{"f"})
+	assert.False(t, optCfgs[0].HasParam)
+	assert.False(t, optCfgs[0].IsArray)
+	assert.Nil(t, optCfgs[0].Default)
+	assert.NotNil(t, optCfgs[0].OnParsed)
+	assert.Equal(t, optCfgs[1].Name, "baz")
+	assert.Equal(t, optCfgs[1].Aliases, []string{"b"})
+	assert.True(t, optCfgs[1].HasParam)
+	assert.False(t, optCfgs[1].IsArray)
+	assert.Equal(t, optCfgs[1].Default, []string{"99"})
+	assert.NotNil(t, optCfgs[1].OnParsed)
+	assert.Equal(t, optCfgs[2].Name, "Qux")
+	assert.Equal(t, optCfgs[2].Aliases, []string(nil))
+	assert.True(t, optCfgs[2].HasParam)
+	assert.False(t, optCfgs[2].IsArray)
+	assert.Equal(t, optCfgs[2].Default, []string{"XXX"})
+	assert.NotNil(t, optCfgs[2].OnParsed)
+	assert.Equal(t, optCfgs[3].Name, "quux")
+	assert.Equal(t, optCfgs[3].Aliases, []string{})
+	assert.True(t, optCfgs[3].HasParam)
+	assert.True(t, optCfgs[3].IsArray)
+	assert.Equal(t, optCfgs[3].Default, []string{"A", "B", "C"})
+	assert.NotNil(t, optCfgs[3].OnParsed)
+	assert.Equal(t, optCfgs[4].Name, "Corge")
+	assert.Equal(t, optCfgs[4].Aliases, []string(nil))
+	assert.True(t, optCfgs[4].HasParam)
+	assert.True(t, optCfgs[4].IsArray)
+	assert.Equal(t, optCfgs[4].Default, []string(nil))
+	assert.NotNil(t, optCfgs[4].OnParsed)
+
+	a, err1 := libarg.ParseWith(args, optCfgs)
+	assert.True(t, err1.IsOk())
+	assert.Equal(t, a.CmdParams(), []string{"c1", "c2"})
+	assert.True(t, a.HasOpt("foo-bar"))
+	assert.True(t, a.HasOpt("baz"))
+	assert.True(t, a.HasOpt("Qux"))
+	assert.True(t, a.HasOpt("quux"))
+	assert.True(t, a.HasOpt("Corge"))
+	assert.Equal(t, a.OptParam("foo-bar"), "")
+	assert.Equal(t, a.OptParam("baz"), "12")
+	assert.Equal(t, a.OptParam("Qux"), "ABC")
+	assert.Equal(t, a.OptParam("quux"), "A")
+	assert.Equal(t, a.OptParam("Corge"), "20")
+	assert.Equal(t, a.OptParams("foo-bar"), []string{})
+	assert.Equal(t, a.OptParams("baz"), []string{"12"})
+	assert.Equal(t, a.OptParams("Qux"), []string{"ABC"})
+	assert.Equal(t, a.OptParams("quux"), []string{"A", "B", "C"})
+	assert.Equal(t, a.OptParams("Corge"), []string{"20", "21"})
+	assert.True(t, options.FooBar)
+	assert.Equal(t, options.Baz, 12)
+	assert.Equal(t, options.Qux, "ABC")
+	assert.Equal(t, options.Quux, []string{"A", "B", "C"})
+	assert.Equal(t, options.Corge, []int{20, 21})
+}

@@ -45,7 +45,7 @@ args.OptParams("baz")   // [1 2]
 args.CmdParams()        // [qux quux]
 ```
 
-### Parse CLI arguments with struct tags
+### Parse CLI arguments for an option store with struct tags
 
 ```
 type MyOptions struct {
@@ -69,6 +69,20 @@ options.Baz    // 12
 options.Qux    // ABC
 options.Quux   // [A B C]
 options.Corge  // [20 21]
+```
+
+Or
+
+```
+optCfgs, err0 := MakeOptCfgsFor(&options)
+
+args, err1 := ParseWith(osArgs, optCfgs)
+args.CmdParams() // [c1 c2]
+options.FooBar   // true
+options.Baz      // 12
+options.Qux      // ABC
+options.Quux     // [A B C]
+options.Corge    // [20 21]
 ```
 
 <a name="support-go-versions"></a>
