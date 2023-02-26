@@ -60,12 +60,19 @@ const anyOpt = "*"
 //
 // Default is the field to specify the default value for when the option is not
 // given in command line arguments.
+//
+// OnParsed is the field for the event handler which is called when the option
+// has been parsed.
+// This handler receives a string array which is the option parameter(s) as its
+// argument.
+// If this field is nil, nothing is done after parsing.
 type OptCfg struct {
 	Name     string
 	Aliases  []string
 	HasParam bool
 	IsArray  bool
 	Default  []string
+	OnParsed *func([]string) sabi.Err
 }
 
 // ParseWith is a function which parses command line arguments with option
@@ -116,22 +123,20 @@ type OptCfg struct {
 func ParseWith(args []string, optCfgs []OptCfg) (Args, sabi.Err) {
 	hasAnyOpt := false
 	cfgMap := make(map[string]int)
-	defMap := make(map[string]int)
 	for i, cfg := range optCfgs {
-		if cfg.IsArray && !cfg.HasParam {
-			err := sabi.NewErr(ConfigIsArrayButHasNoParam{Opt: cfg.Name})
-			return Args{cmdParams: empty}, err
+		if !cfg.HasParam {
+			if cfg.IsArray {
+				err := sabi.NewErr(ConfigIsArrayButHasNoParam{Opt: cfg.Name})
+				return Args{cmdParams: empty}, err
+			}
+			if cfg.Default != nil {
+				err := sabi.NewErr(ConfigHasDefaultButHasNoParam{Opt: cfg.Name})
+				return Args{cmdParams: empty}, err
+			}
 		}
 		if cfg.Name == anyOpt {
 			hasAnyOpt = true
 			continue
-		}
-		if cfg.Default != nil {
-			if !cfg.HasParam {
-				err := sabi.NewErr(ConfigHasDefaultButHasNoParam{Opt: cfg.Name})
-				return Args{cmdParams: empty}, err
-			}
-			defMap[cfg.Name] = i
 		}
 		cfgMap[cfg.Name] = i
 		for _, a := range cfg.Aliases {
@@ -201,10 +206,17 @@ func ParseWith(args []string, optCfgs []OptCfg) (Args, sabi.Err) {
 		return Args{cmdParams: empty}, err
 	}
 
-	for name, i := range defMap {
-		_, exists := optParams[name]
-		if !exists {
-			optParams[name] = optCfgs[i].Default
+	for _, cfg := range optCfgs {
+		arr, exists := optParams[cfg.Name]
+		if !exists && cfg.Default != nil {
+			arr = cfg.Default
+			optParams[cfg.Name] = arr
+		}
+		if cfg.OnParsed != nil {
+			err = (*cfg.OnParsed)(arr)
+			if !err.IsOk() {
+				return Args{cmdParams: empty}, err
+			}
 		}
 	}
 

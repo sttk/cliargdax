@@ -119,32 +119,9 @@ type /* error reason */ (
 //	options.Quux   // [A B C]
 //	options.Corge  // [20 21]
 func ParseFor(args []string, options any) ([]string, sabi.Err) {
-	v := reflect.ValueOf(options)
-	if v.Kind() != reflect.Ptr {
-		return empty, sabi.NewErr(OptionStoreIsNotChangeable{})
-	}
-	v = v.Elem()
-
-	t := v.Type()
-	n := t.NumField()
-
-	optCfgs := make([]OptCfg, n)
-	vsetMap := make(map[string]func([]string) sabi.Err)
-
-	var vset func([]string) sabi.Err
-	var name string
-	var err sabi.Err
-
-	for i := 0; i < n; i++ {
-		optCfgs[i], err = newOptCfg(t.Field(i))
-		if !err.IsOk() {
-			return empty, err
-		}
-		vset, err = newValueSetter(optCfgs[i].Name, v.Field(i))
-		if !err.IsOk() {
-			return empty, err
-		}
-		vsetMap[optCfgs[i].Name] = vset
+	optCfgs, err := MakeOptCfgsFor(options)
+	if !err.IsOk() {
+		return empty, err
 	}
 
 	a, err := ParseWith(args, optCfgs)
@@ -152,14 +129,38 @@ func ParseFor(args []string, options any) ([]string, sabi.Err) {
 		return empty, err
 	}
 
-	for name, vset = range vsetMap {
-		err := vset(a.optParams[name])
+	return a.cmdParams, sabi.Ok()
+}
+
+// MakeOptCfgsFor is a function to make a OptCfg array from fields of the
+// option store which is the argument of this function.
+func MakeOptCfgsFor(options any) ([]OptCfg, sabi.Err) {
+	v := reflect.ValueOf(options)
+	if v.Kind() != reflect.Ptr {
+		return nil, sabi.NewErr(OptionStoreIsNotChangeable{})
+	}
+	v = v.Elem()
+
+	t := v.Type()
+	n := t.NumField()
+
+	optCfgs := make([]OptCfg, n)
+	var err sabi.Err
+
+	for i := 0; i < n; i++ {
+		optCfgs[i], err = newOptCfg(t.Field(i))
 		if !err.IsOk() {
-			return empty, err
+			return nil, err
 		}
+		var setter func([]string) sabi.Err
+		setter, err = newValueSetter(optCfgs[i].Name, v.Field(i))
+		if !err.IsOk() {
+			return nil, err
+		}
+		optCfgs[i].OnParsed = &setter
 	}
 
-	return a.cmdParams, sabi.Ok()
+	return optCfgs, sabi.Ok()
 }
 
 func newOptCfg(fld reflect.StructField) (OptCfg, sabi.Err) {
