@@ -17,6 +17,10 @@ test() {
   go test -v ./...
 }
 
+unit() {
+  go test -v ./... -run $1
+}
+
 cover() {
   mkdir -p coverage
   go test -coverprofile=coverage/cover.out ./...
@@ -38,6 +42,11 @@ if [[ $# == 0 ]]; then
   compile
   test
   cover
+  exit 0
+fi
+
+if [[ "$1" == "unit" ]]; then
+  unit $2
   exit 0
 fi
 
