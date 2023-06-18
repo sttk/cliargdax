@@ -10,7 +10,7 @@ A dax of sabi to operate command line interface of Golang application.
 ## Import this package
 
 ```
-import "github.com/sttk-go/clidax"
+import "github.com/sttk/clidax"
 ```
 
 <a name="support-go-versions"></a>
@@ -33,11 +33,11 @@ This program is free software under MIT License.<br>
 See the file LICENSE in this distribution for more details.
 
 
-[repo-url]: https://github.com/sttk-go/clidax
-[pkg-dev-img]: https://pkg.go.dev/badge/github.com/sttk-go/clidax.svg
-[pkg-dev-url]: https://pkg.go.dev/github.com/sttk-go/clidax
-[ci-img]: https://github.com/sttk-go/clidax/actions/workflows/go.yml/badge.svg?branch=main
-[ci-url]: https://github.com/sttk-go/clidax/actions
+[repo-url]: https://github.com/sttk/clidax-go
+[pkg-dev-img]: https://pkg.go.dev/badge/github.com/sttk/clidax.svg
+[pkg-dev-url]: https://pkg.go.dev/github.com/sttk/clidax
+[ci-img]: https://github.com/sttk/clidax-go/actions/workflows/go.yml/badge.svg?branch=main
+[ci-url]: https://github.com/sttk/clidax-go/actions
 [mit-img]: https://img.shields.io/badge/license-MIT-green.svg
 [mit-url]: https://opensource.org/licenses/MIT
 
