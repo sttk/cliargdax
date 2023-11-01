@@ -25,31 +25,31 @@ compile() {
 }
 
 test() {
-  go test -v ./...
+  go test -v $(go list ./... | grep -v /benchmark)
   errcheck $?
 }
 
 unit() {
-  go test -v ./... -run $1
+  go test -v -run $1 $(go list ./... | grep -v /benchmark)
   errcheck $?
 }
 
 cover() {
   mkdir -p coverage
   errcheck $?
-  go test -coverprofile=coverage/cover.out ./...
+  go test -coverprofile=coverage/cover.out $(go list ./... | grep -v /benchmark)
   errcheck $?
   go tool cover -html=coverage/cover.out -o coverage/cover.html
   errcheck $?
 }
 
 bench() {
-  local dir=$2
+  local dir=$1
   if [[ "$dir" == "" ]]; then
     dir="."
   fi
   pushd $dir
-  go test -bench . --benchmem -run=^$
+  go test -bench . --benchmem
   errcheck $?
   popd
 }
@@ -63,6 +63,9 @@ if [[ "$#" == "0" ]]; then
 
 elif [[ "$1" == "unit" ]]; then
   unit $2
+
+elif [[ "$1" == "bench" ]]; then
+  bench $2
 
 else
   for a in "$@"; do
@@ -82,14 +85,11 @@ else
     cover)
       cover
       ;;
-    bench)
-      bench
-      ;;
     '')
       compile
       ;;
     *)
-      echo "Bad task: %a"
+      echo "Bad task: $a"
       exit 1
       ;;
     esac
