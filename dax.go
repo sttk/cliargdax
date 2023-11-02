@@ -2,6 +2,80 @@
 // This program is free software under MIT License.
 // See the file LICENSE in this distribution for more details.
 
+/*
+Package github.com/sttk/cliargdax is a dax in sabi framework for data access.
+
+This package uses github.com/sttk/cliargs package to parse command-line arguments and store the results of parsing.
+
+# Usage of dax source
+
+This package provides a dax source named DaxSrc.
+
+This dax source can be used both as a global and local dax source.
+However, since command-line arguments can be obtained globally, it is typically
+used as a global dax source.
+And it would be appropriate to declare its usage within init function.
+
+	import "github.com/sttk/cliargdax"
+
+	func init() {
+	    sabi.Uses("cliopts", cliargdax.NewDaxSrc())
+	}
+
+A DaxSrc instance can be instantiated by the functions: NewDaxSrc,
+NewDaxSrcWithOptCfgs, NewDaxSrcForOptions.
+
+NewDaxSrc function creates a DaxSrc instance without configuration (see
+above).
+And it's Setup method separates command-line arguments to normal arguments and options only by their formats.
+
+NewDaxSrcWithOptCfgs function creates a DaxSrc instance with an array of
+cliargs.OptCfg.
+
+	optCfgs := []cliargs.OptCfg{
+	  cliargs.OptCfg{ ... },
+	  ... ,
+	}
+	sabi.Uses("cliopts", cliargdax.NewDaxSrcWithOptCfgs(optCfgs))
+
+And it's Setup method parses command-line arguments with the array.
+This configuration array can be retrieve by using DaxConn#OptCfgs method.
+
+NewDaxSrcForOptions function creates a DaxSrc instance with a pointer of any
+type struct instance that stores results of command-line argument parsing.
+
+	type MyOptions struct { ... }
+	opts := MyOptions{ ... }
+	sabi.Uses("cliopts", cliargdax.NewDaxSrcForOptions(&opts)
+
+And it's Setup method parses command-line arguments with an array of
+cliargs.OptCfg that is created from the option store instance.
+These configuration array and store instance can be retrieve by using
+DaxConn#OptCfgs and DaxConn#Options methods.
+
+# Usage of dax connection
+
+This package provides a dax connection named DaxConn.
+This dax connection is created by DaxSrc#CreateDaxConn method.
+
+Within dax implementations using command-line arguments, this dax connection is
+obtained by sabi.GetDaxConn method.
+And by this dac connection, the results of command-line argument parsing can be
+obtained.
+
+	func (dax MyDax) doSomeDataAccess() errs.Err {
+	    conn, err := sabi.GetDaxConn[cliargdax.DaxConn](dax, "cliopts")
+	    if err.IsNotOk() {
+	        return err
+	    }
+
+	    var cmd cliargs.Cmd = conn.Cmd()
+	    var optCfgs []cliargs.OptCfg = conn.OptCfgs()
+	    var options *MyOptions = conn.Options().(*MyOptions)
+
+	    return errs.Ok()
+	}
+*/
 package cliargdax
 
 import (
